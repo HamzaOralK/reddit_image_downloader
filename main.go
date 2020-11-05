@@ -27,7 +27,6 @@ func main() {
 func getImages(url string, channel chan string) {
 	c := colly.NewCollector()
 
-	// On every a element which has href attribute call callback
 	c.OnHTML("img", func(e *colly.HTMLElement) {
 		if strings.Contains(e.Attr("class"), "_1XWObl-3b9tPy64oaG6fax") {
 			imageLink := e.Attr("src")
@@ -35,10 +34,10 @@ func getImages(url string, channel chan string) {
 			channel <- imageLink
 		}
 	})
-	// Before making a request print "Visiting ..."
+
 	c.OnRequest(func(r *colly.Request) {
 		fmt.Println("Visiting", r.URL.String())
 	})
-	// Start scraping on https://hackerspaces.org
+
 	c.Visit(url)
 }
