@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -80,6 +81,7 @@ func makeRequest(url *string) []byte {
 }
 
 func downloadFiles(cont *Container) {
+	resetFileSystem("downloads")
 	for k, v := range cont.Posts {
 		if v.Thumbnail.Src != "" {
 			downloadRequest(v.Thumbnail.Src, k)
@@ -94,9 +96,9 @@ func downloadRequest(URL, fileName string) error {
 	}
 	defer response.Body.Close()
 	if response.StatusCode != 200 {
-		return errors.New("Received non 200 response code")
+		return errors.New("Could not download: " + fileName)
 	}
-	file, err := os.Create(fileName + ".jpg")
+	file, err := os.Create("./downloads/" + fileName + ".jpg")
 	if err != nil {
 		return err
 	}
@@ -104,6 +106,34 @@ func downloadRequest(URL, fileName string) error {
 	_, err = io.Copy(file, response.Body)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func resetFileSystem(dir string) {
+	removeContents(dir)
+	err := os.Remove(dir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	os.Mkdir(dir, 0777)
+}
+
+func removeContents(dir string) error {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(dir, name))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
