@@ -63,7 +63,7 @@ func makeRequest(url *string) []byte {
 		log.Fatalln(reqErr)
 	}
 
-	req.Header.Set("Host", "gateway.reddit.com")
+	// req.Header.Set("Host", "gateway.reddit.com")
 	req.Header.Set("user-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:82.0) Gecko/20100101 Firefox/82.0")
 	req.Header.Set("accept", "*/*")
 	req.Header.Set("content-length", "0")
@@ -111,10 +111,12 @@ func downloadRequest(URL, fileName string) error {
 }
 
 func resetFileSystem(dir string) {
-	removeContents(dir)
-	err := os.Remove(dir)
-	if err != nil {
-		log.Fatal(err)
+	if _, err := os.Stat(dir); !os.IsNotExist(err) {
+		removeContents(dir)
+		err := os.Remove(dir)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	os.Mkdir(dir, 0777)
 }
